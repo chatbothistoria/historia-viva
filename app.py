@@ -752,7 +752,7 @@ def build_quiz(messages: list, era_data: dict, level: str = "básico"):
         return [], "💬 Necesitas tener al menos 2 intercambios de preguntas y respuestas en el chat antes de generar el cuestionario."
 
     chat_text = ""
-    for q, a in pairs[:6]:
+    for q, a in pairs[-6:]:
         chat_text += f"Alumno: {q}\nPersonaje: {a[:350]}\n\n"
 
     prompt = f"""Eres experto en educación infantil y primaria especializado en historia.
@@ -790,10 +790,9 @@ FORMATO JSON EXACTO:
             stream=False,
             max_tokens=1200,
             temperature=0.3,
+            response_format={"type": "json_object"},
         )
         raw  = response.choices[0].message.content.strip()
-        raw  = re.sub(r"^```[a-z]*\n?","", raw)
-        raw  = re.sub(r"\n?```$","", raw)
         data = json.loads(raw)
         items = []
         for p in data.get("preguntas",[]):
@@ -891,18 +890,24 @@ def handle_question(question: str, current_era: dict, level: str,
     Procesa una pregunta del alumno y muestra la respuesta del personaje.
 
     Flujo:
-      1. Renderiza la pregunta del alumno en el chat.
-      2. Si se ha alcanzado el límite diario de Groq, muestra un mensaje
+      1. Detiene cualquier lectura TTS en curso (la respuesta anterior).
+      2. Renderiza la pregunta del alumno en el chat.
+      3. Si se ha alcanzado el límite diario de Groq, muestra un mensaje
          de aviso sin llamar a la API.
-      3. Si hay cuota, llama a Groq con el system prompt completo
+      4. Si hay cuota, llama a Groq con el system prompt completo
          (voz del personaje + contexto de la época + instrucciones
          pedagógicas del nivel) y hace streaming de la respuesta.
-      4. Guarda la respuesta en el historial y registra la pregunta para
+      5. Guarda la respuesta en el historial y registra la pregunta para
          el panel docente.
-      5. En nivel Infantil, lanza el TTS automáticamente con el texto
+      6. En nivel Infantil, lanza el TTS automáticamente con el texto
          completo (no por chunks) → lectura fluida sin cortes.
     """
     ss = st.session_state
+
+    # Cortar cualquier lectura TTS en curso para que no se solape
+    # con la nueva respuesta (especialmente notable en nivel Infantil,
+    # donde la velocidad de lectura es lenta y se alarga el solapamiento).
+    stop_speak()
 
     with st.chat_message("user", avatar="🧑‍🎓"):
         st.write(question)
