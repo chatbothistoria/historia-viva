@@ -271,6 +271,26 @@ LEVEL_THEMES = {
     "avanzado":   ["identidad","cotidiana","fuentes","poder","desigualdad","legado"],
 }
 
+# ── Mapeo nivel → campo de la FAQ en los archivos data/*.js ─────────────────
+# Cada FAQ guarda 4 versiones de la respuesta, una por nivel educativo.
+# Se usa en build_context() para inyectar al LLM ejemplos en el registro correcto.
+LEVEL_TO_FAQ_FIELD = {
+    "infantil":   "infantil",
+    "básico":     "basic",
+    "intermedio": "intermediate",
+    "avanzado":   "advanced",
+}
+
+# ── Cuántas FAQs incluir como ejemplos en el contexto, por nivel ────────────
+# Niveles bajos → más ejemplos (textos cortos).
+# Niveles altos → menos ejemplos (textos largos, más detalle por ejemplo).
+FAQS_PER_LEVEL = {
+    "infantil":   12,
+    "básico":     12,
+    "intermedio": 10,
+    "avanzado":    8,
+}
+
 THEME_EMOJI = {
     "cotidiana":"🍞","infancia":"🎮","identidad":"🗓️","trabajo":"⚒️","poder":"👑",
     "creencias":"🙏","conflicto":"⚔️","desigualdad":"⚖️","comparacion":"🔄",
@@ -431,8 +451,12 @@ def load_all_data():
             eras[eid] = json.loads(content[start+2:].rstrip().rstrip(";").rstrip())
         except json.JSONDecodeError:
             pass
-    # Pre-compute context strings (zero overhead per question)
-    era_contexts = {eid: build_context(data) for eid, data in eras.items()}
+    # Pre-compute context strings por (era, nivel) — sin overhead por pregunta.
+    # Memoria total: ~64 contextos × ~18 KB = ~1 MB. Negligible.
+    era_contexts = {
+        eid: {lvl: build_context(data, lvl) for lvl in LEVELS}
+        for eid, data in eras.items()
+    }
     return era_index, eras, era_contexts
 
 # (Motor local de FAQ eliminado — causaba falsos positivos en el matching
@@ -442,7 +466,26 @@ def load_all_data():
 # ═══════════════════════════════════════════════════════════════════════════════
 # CONTEXTO PARA GROQ
 # ═══════════════════════════════════════════════════════════════════════════════
-def build_context(era_data: dict) -> str:
+def build_context(era_data: dict, level: str = "básico") -> str:
+    """
+    Construye el contexto histórico que se inyecta en el system prompt del LLM.
+
+    Las partes `sections`, `topicDetails` y `teacher` se incluyen completas
+    para todos los niveles (son texto neutro y rico que el modelo necesita
+    para responder con precisión).
+
+    El bloque "EJEMPLOS DE RESPUESTAS CORRECTAS" sí se adapta al nivel:
+      - El TEXTO de cada FAQ se toma del campo del nivel
+        (`infantil` / `basic` / `intermediate` / `advanced`).
+      - Las FAQs se filtran por temas relevantes para el nivel (LEVEL_THEMES).
+        Si el filtro deja menos FAQs de las necesarias, se completa con el
+        resto en orden original.
+      - El número de FAQs incluidas viene de FAQS_PER_LEVEL (más en niveles
+        bajos con textos cortos, menos en avanzado con textos largos).
+
+    El objetivo es que el modelo vea ejemplos en el registro EXACTO que
+    debe imitar, no solo instrucciones abstractas sobre cómo hablar.
+    """
     sections      = era_data.get("sections", {})
     topic_details = era_data.get("topicDetails", {})
     teacher       = era_data.get("teacher", {})
@@ -462,10 +505,31 @@ def build_context(era_data: dict) -> str:
     anacs = teacher.get("anacronismos", [])
     if anacs:
         parts.append("\n=== ERRORES HISTÓRICOS A EVITAR ===\n" + "; ".join(anacs))
+
+    # ── EJEMPLOS DE RESPUESTAS adaptados al nivel del alumno ─────────────────
     if faqs:
-        parts.append("\n=== EJEMPLOS DE RESPUESTAS CORRECTAS ===")
-        for faq in faqs[:5]:
-            parts.append(f"P: {faq.get('question','')}\nR: {faq.get('basic','')[:200]}")
+        faq_field      = LEVEL_TO_FAQ_FIELD.get(level, "basic")
+        allowed_themes = set(LEVEL_THEMES.get(level, []))
+        n_examples     = FAQS_PER_LEVEL.get(level, 10)
+
+        # 1) FAQs cuyo tema es apropiado para el nivel.
+        on_theme = [f for f in faqs if f.get("theme") in allowed_themes] \
+                   if allowed_themes else list(faqs)
+        # 2) Si el filtro deja pocas, completar con el resto en orden original.
+        if len(on_theme) < n_examples:
+            extra = [f for f in faqs if f not in on_theme]
+            on_theme = on_theme + extra
+
+        # 3) Formatear con el campo del nivel (fallback "basic" → "" si falta).
+        examples = []
+        for faq in on_theme[:n_examples]:
+            q = faq.get("question", "").strip()
+            r = (faq.get(faq_field) or faq.get("basic") or "").strip()
+            if q and r:
+                examples.append(f"P: {q}\nR: {r}")
+        if examples:
+            parts.append(f"\n=== EJEMPLOS DE RESPUESTAS CORRECTAS (registro nivel {level}) ===")
+            parts.extend(examples)
     return "\n\n".join(parts)
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -517,7 +581,7 @@ def _build_system_prompt(era_data: dict, level: str, prebuilt_context: str = "")
         return None, "⚠️ IA no configurada. Añade GROQ_API_KEY en los Secrets de Streamlit."
 
     level_cfg    = LEVELS[level]
-    context_text = prebuilt_context if prebuilt_context else build_context(era_data)
+    context_text = prebuilt_context if prebuilt_context else build_context(era_data, level)
     # ── Instrucciones pedagógicas específicas por nivel de edad ──────────────
     PEDAGOGICAL_INSTRUCTIONS = {
         "infantil": """
@@ -1192,7 +1256,7 @@ def main():
     level       = ss.level
     era_meta    = ERA_META.get(ss.era_id, {"emoji":"🏛️","color":"#5c35d9","bg":"#f3efff"})
     era_images  = load_era_images()   # cacheado, no bloquea
-    current_context = era_contexts.get(ss.era_id, "")
+    current_context = era_contexts.get(ss.era_id, {}).get(level, "")
 
     if ss.big_text:
         st.markdown("<style>html{font-size:18px}</style>", unsafe_allow_html=True)
