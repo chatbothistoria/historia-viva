@@ -297,106 +297,6 @@ INFANTIL_ERA_SUGGESTIONS = {
 }
 INFANTIL_FALLBACK = ["¿Dónde vivíais?","¿Qué comíais?","¿Había niños como yo?","¿Cómo era tu casa?","¿A qué jugabais?","¿Quién mandaba?"]
 
-# ── Textos de apertura del personaje adaptados al nivel (4 × 16 épocas) ──────
-# Fuente de verdad en app.py para evitar dependencia de caché de archivos JS.
-APERTURA_NIVEL = {
-    "paleolitico": {
-        "infantil":   "¡Hola! Yo vivo hace muchísimo tiempo. ¿Me preguntas cómo comemos y dónde dormimos?",
-        "basico":     "¡Hola! Soy una persona del Paleolítico, la época más antigua de todas. Cazamos animales, recogemos frutos y nos movemos de un sitio a otro. ¿Qué quieres saber?",
-        "intermedio": "Hola. Vivo en el Paleolítico, hace miles y miles de años. Mi grupo se desplaza continuamente para encontrar comida y refugio. No tenemos casas fijas ni cultivos. ¿Qué te gustaría preguntarme?",
-        "avanzado":   "Hola. Soy una persona del Paleolítico, la etapa más larga de la historia humana. Mi vida depende del entorno: cazamos, pescamos y recolectamos. No vivimos en cuevas permanentes como se cree; elegimos el refugio según la estación. ¿Qué quieres saber sobre cómo sobrevivimos?",
-    },
-    "neolitico": {
-        "infantil":   "¡Hola! Tenemos animales y plantamos comida. ¿Quieres saber cómo vivimos?",
-        "basico":     "¡Hola! Soy del Neolítico. Aprendimos a plantar trigo y a cuidar ovejas y vacas. Ya no tenemos que ir tan lejos a buscar comida. ¿Qué quieres preguntarme?",
-        "intermedio": "Hola. Soy del Neolítico. Todo cambió cuando aprendimos a cultivar la tierra y a domesticar animales. Podemos quedarnos en el mismo sitio, construir casas y guardar comida. ¿Qué te gustaría saber?",
-        "avanzado":   "Hola. Vivo en el Neolítico, una época de grandes cambios. La agricultura y la ganadería transformaron por completo la vida humana: surgieron los poblados, la división del trabajo y las primeras desigualdades sociales. ¿Qué te gustaría preguntarme?",
-    },
-    "edad_metales": {
-        "infantil":   "¡Hola! Hacemos cosas con metal, como espadas y herramientas. ¿Me preguntas cómo?",
-        "basico":     "¡Hola! En mi época aprendimos a fundir metales como el cobre y el hierro para hacer herramientas y armas. Somos mucho más fuertes que antes. ¿Qué quieres saber?",
-        "intermedio": "Hola. Vivo en la Edad de los Metales. Primero usamos el cobre, luego el bronce y después el hierro. Cada metal trajo nuevas herramientas, nuevas armas y cambios en cómo nos organizamos. ¿Qué quieres preguntarme?",
-        "avanzado":   "Hola. Vivo en la Edad de los Metales, una época de profundas transformaciones. El dominio del metal no solo mejoró nuestras herramientas: también cambió el comercio, las relaciones de poder y la forma de hacer la guerra. ¿Qué te gustaría explorar?",
-    },
-    "egipto": {
-        "infantil":   "¡Hola! Yo vivo cerca de un río muy grande que se llama el Nilo. ¡Pregúntame lo que quieras!",
-        "basico":     "¡Hola! Vivo en el antiguo Egipto, junto al río Nilo. Tenemos pirámides enormes, un faraón que manda en todo y muchos dioses. ¿Qué quieres saber?",
-        "intermedio": "Hola. Vivo en el antiguo Egipto. El Nilo lo es todo para nosotros: nos da agua, comida y tierra fértil. El faraón es nuestro dios y rey a la vez. ¿Qué te gustaría preguntarme?",
-        "avanzado":   "Hola. Soy una persona del antiguo Egipto. Nuestra civilización lleva miles de años junto al Nilo, que marca el ritmo de la agricultura y la vida entera. El faraón concentra el poder político y religioso, pero no todos vivimos igual. ¿Sobre qué quieres reflexionar?",
-    },
-    "grecia": {
-        "infantil":   "¡Hola! Yo vivo en Grecia, junto al mar. Tenemos muchos dioses y me gusta mucho jugar. ¿Me preguntas?",
-        "basico":     "¡Hola! Vivo en la antigua Grecia. Tenemos muchos dioses, los Juegos Olímpicos y ciudades muy importantes como Atenas. ¿Qué quieres saber?",
-        "intermedio": "Hola. Soy del mundo griego antiguo. Vivimos en ciudades-estado llamadas polis, cada una con sus propias leyes. En Atenas inventamos algo nuevo: la democracia. ¿Qué te gustaría preguntarme?",
-        "avanzado":   "Hola. Vivo en la antigua Grecia, una civilización que sentó muchas bases del mundo occidental: la democracia, la filosofía, el teatro, los Juegos Olímpicos. Pero no todo era perfecto: había esclavitud y las mujeres no tenían los mismos derechos. ¿Qué quieres explorar?",
-    },
-    "roma": {
-        "infantil":   "¡Hola! Yo vivo en Roma. Somos muy poderosos y tenemos un jefe que se llama el emperador. ¿Qué quieres saber?",
-        "basico":     "¡Hola! Vivo en el Imperio Romano. Tenemos calzadas, acueductos, baños públicos y un ejército muy fuerte. ¿Qué quieres preguntarme?",
-        "intermedio": "Hola. Soy romano. Nuestro imperio es enorme y llega a muchos países. Construimos carreteras, acueductos y ciudades por todas partes. El emperador manda, pero no todos vivimos igual. ¿Qué te gustaría saber?",
-        "avanzado":   "Hola. Soy del Imperio Romano, uno de los más extensos y duraderos de la historia. Nuestra organización política, nuestras leyes y nuestra ingeniería siguen influyendo hoy. Pero el Imperio también se sostuvo sobre la esclavitud y la conquista. ¿Sobre qué quieres reflexionar?",
-    },
-    "edad_media": {
-        "infantil":   "¡Hola! Yo vivo cerca de un castillo grande. Hay un rey que manda en todo. ¿Me preguntas cómo vivimos?",
-        "basico":     "¡Hola! Vivo en la Edad Media. Hay castillos, caballeros con armadura, reyes y monasterios. La mayoría trabajamos en el campo. ¿Qué quieres saber?",
-        "intermedio": "Hola. Vivo en la Edad Media. La sociedad se organiza en el feudalismo: los señores tienen tierras y los campesinos las trabajan a cambio de protección. La Iglesia tiene mucho poder. ¿Qué te gustaría preguntarme?",
-        "avanzado":   "Hola. Soy del Medievo, una época larga y muy variada. El feudalismo estructura la sociedad, la Iglesia guía la vida espiritual y política, y poco a poco nacen las ciudades y los gremios. Es una época de desigualdades, pero también de arte, fe y cambio. ¿Sobre qué quieres reflexionar?",
-    },
-    "america_precolombina": {
-        "infantil":   "¡Hola! Yo vivo en un lugar muy lejos, con pirámides y selvas. ¿Quieres saber cómo es mi vida?",
-        "basico":     "¡Hola! Vivo en América antes de que llegaran los europeos. Tenemos pirámides, cacao, maíz y un calendario propio. ¿Qué quieres preguntarme?",
-        "intermedio": "Hola. Vivo en América antes de la llegada de los europeos. Existen grandes civilizaciones como la maya, la azteca y la inca, cada una con su organización, su arte y su religión. ¿Qué te gustaría saber?",
-        "avanzado":   "Hola. Vivo en la América precolombina, un continente con civilizaciones avanzadas, complejas y diversas. Los mayas, aztecas e incas desarrollaron sistemas de escritura, astronomía, arquitectura y comercio. Su mundo cambió radicalmente con la llegada europea. ¿Qué quieres explorar?",
-    },
-    "renacimiento": {
-        "infantil":   "¡Hola! En mi época pintamos cuadros muy bonitos y los barcos viajan muy lejos. ¿Me preguntas algo?",
-        "basico":     "¡Hola! Vivo en el Renacimiento. Los artistas pintan cuadros increíbles, los barcos descubren nuevas tierras y se inventa la imprenta. ¿Qué quieres saber?",
-        "intermedio": "Hola. Vivo en el Renacimiento, una época de grandes cambios. El arte, la ciencia y el pensamiento florecen en Europa. La imprenta permite que las ideas se extiendan mucho más rápido. ¿Qué te gustaría preguntarme?",
-        "avanzado":   "Hola. Vivo en el Renacimiento, una época que mira hacia el ser humano como centro del mundo. El arte, la ciencia, la filosofía y los viajes de exploración cambian la visión europea del universo. Pero estos avances no llegan a todos por igual. ¿Sobre qué quieres reflexionar?",
-    },
-    "revolucion_francesa": {
-        "infantil":   "¡Hola! En mi ciudad hay mucho ruido y la gente está enfadada. ¿Quieres saber por qué?",
-        "basico":     "¡Hola! Vivo en la Revolución Francesa. El pueblo está muy enfadado con el rey porque pasa mucha hambre. Todo está cambiando muy rápido. ¿Qué quieres saber?",
-        "intermedio": "Hola. Vivo en la Revolución Francesa. El pueblo se levantó contra el rey Luis XVI porque había mucha desigualdad y hambre. Queremos libertad, igualdad y fraternidad. ¿Qué te gustaría preguntarme?",
-        "avanzado":   "Hola. Vivo en la Revolución Francesa, uno de los momentos más decisivos de la historia moderna. La monarquía absoluta cae, se proclaman los derechos del hombre y la soberanía popular. Pero la Revolución también trajo el Terror y la guerra. Sus ideales siguen vivos hoy. ¿Qué quieres explorar?",
-    },
-    "revolucion_industrial": {
-        "infantil":   "¡Hola! En mi época hay fábricas grandes y trenes que van muy rápido. ¿Me preguntas cómo es esto?",
-        "basico":     "¡Hola! Vivo en la Revolución Industrial. Las máquinas hacen ahora el trabajo que antes hacían personas. Hay muchas fábricas y las ciudades crecen mucho. ¿Qué quieres saber?",
-        "intermedio": "Hola. Vivo en la Revolución Industrial. Las máquinas de vapor cambian todo: la producción, el transporte y la vida en las ciudades. Pero muchos obreros trabajan en condiciones muy duras. ¿Qué te gustaría preguntarme?",
-        "avanzado":   "Hola. Vivo en la Revolución Industrial, un período de transformación radical. La máquina de vapor, el ferrocarril y las fábricas redefinen la economía y la sociedad. Nacen la burguesía y el proletariado, y con ellos los primeros movimientos obreros. ¿Sobre qué quieres reflexionar?",
-    },
-    "primera_guerra_mundial": {
-        "infantil":   "¡Hola! En mi época hay una guerra muy grande en muchos países. Es triste. ¿Me preguntas cómo vivimos?",
-        "basico":     "¡Hola! Vivo en la Primera Guerra Mundial. Es una guerra enorme entre muchos países. Hay trincheras, miedo y mucha gente sufre. ¿Qué quieres saber?",
-        "intermedio": "Hola. Vivo en la Primera Guerra Mundial. Es una guerra diferente a todas las anteriores: hay trincheras, gas venenoso y millones de muertos. En casa, la vida también cambia mucho. ¿Qué te gustaría preguntarme?",
-        "avanzado":   "Hola. Vivo en la Primera Guerra Mundial, el primer conflicto de escala verdaderamente global. Las alianzas entre naciones, el imperialismo y el nacionalismo desencadenaron una guerra devastadora que cambió el mapa de Europa y el mundo. ¿Qué quieres explorar?",
-    },
-    "guerra_civil_espanola": {
-        "infantil":   "¡Hola! En España hay una guerra y mucha gente tiene miedo. ¿Me preguntas cómo vivimos los niños?",
-        "basico":     "¡Hola! Vivo en la Guerra Civil Española. Hay dos bandos peleando y muchas familias tienen que huir de su casa. Es una época muy difícil. ¿Qué quieres saber?",
-        "intermedio": "Hola. Vivo en la Guerra Civil Española, un conflicto que divide el país en dos. Muchas familias sufren, hay bombardeos y miles de personas tienen que exiliarse. ¿Qué te gustaría preguntarme?",
-        "avanzado":   "Hola. Vivo en la Guerra Civil Española, un conflicto que enfrentó a republicanos y nacionalistas entre 1936 y 1939. Fue una guerra de ideologías, con intervención extranjera y consecuencias que marcaron a generaciones. La memoria de ese tiempo sigue siendo importante hoy. ¿Qué quieres explorar?",
-    },
-    "segunda_guerra_mundial": {
-        "infantil":   "¡Hola! Hay una guerra en todo el mundo y es muy difícil. ¿Quieres saber cómo vivimos?",
-        "basico":     "¡Hola! Vivo en la Segunda Guerra Mundial. Es la guerra más grande que ha habido nunca. Hay bombardeos, mucho miedo y muchas familias separadas. ¿Qué quieres saber?",
-        "intermedio": "Hola. Vivo en la Segunda Guerra Mundial. Es un conflicto enorme que afecta a casi todo el mundo. El nazismo, el Holocausto y los bombardeos marcan esta época de forma terrible. ¿Qué te gustaría preguntarme?",
-        "avanzado":   "Hola. Vivo en la Segunda Guerra Mundial, el conflicto más mortífero de la historia. El nazismo, el Holocausto, los bombardeos masivos y las bombas atómicas definen una época de horror. De ella nació la ONU y la Declaración Universal de Derechos Humanos. ¿Qué quieres explorar?",
-    },
-    "dictadura_franquista": {
-        "infantil":   "¡Hola! En España manda una sola persona que se llama Franco. ¿Me preguntas cómo vivimos?",
-        "basico":     "¡Hola! Vivo en la época de Franco, en España. Solo hay un jefe que manda en todo. No podemos decir lo que pensamos libremente. ¿Qué quieres saber?",
-        "intermedio": "Hola. Vivo bajo la dictadura del general Franco en España. No hay elecciones, no hay libertad de prensa y quien se opone al régimen puede ser detenido. La vida cotidiana está marcada por el miedo y el control. ¿Qué te gustaría preguntarme?",
-        "avanzado":   "Hola. Vivo en la España franquista, una dictadura que duró casi cuarenta años. La represión política, la censura, el control de la Iglesia y la falta de libertades definieron la vida de varias generaciones. Entender este período es fundamental para entender la España de hoy. ¿Qué quieres explorar?",
-    },
-    "democracia_actual": {
-        "infantil":   "¡Hola! Vivimos en un país donde todos podemos decir lo que pensamos. ¿Me preguntas cómo funciona?",
-        "basico":     "¡Hola! Vivo en la democracia española. Los ciudadanos votamos para elegir a nuestros gobernantes y tenemos derechos que hay que cuidar. ¿Qué quieres saber?",
-        "intermedio": "Hola. Vivo en la democracia actual de España, que empezó tras la muerte de Franco. Tenemos una Constitución, elecciones libres y derechos fundamentales. Pero la democracia no se mantiene sola: hay que participar y defenderla. ¿Qué te gustaría preguntarme?",
-        "avanzado":   "Hola. Vivo en la democracia española, fruto de una Transición que transformó el país tras cuarenta años de dictadura. Tenemos separación de poderes, derechos fundamentales y libertad de expresión. Pero la democracia es un sistema que se construye cada día y tiene retos abiertos. ¿Sobre qué quieres reflexionar?",
-    },
-}
 
 QUIZ_CONFIG = {
     "infantil":   {"n":3,"instruccion":(
@@ -1485,11 +1385,13 @@ def main():
         emoji = era_meta["emoji"]
 
         # Texto de apertura adaptado al nivel
+        # Fuente única de verdad: el campo `apertura_nivel` del archivo data/<era>.js
+        # (las claves del JS usan acentos eliminados: "basico" en vez de "básico")
         level_key = (level
                      .replace("á","a").replace("é","e").replace("í","i")
                      .replace("ó","o").replace("ú","u"))
         apertura_text = (
-            APERTURA_NIVEL.get(ss.era_id, {}).get(level_key)
+            current_era.get("apertura_nivel", {}).get(level_key)
             or current_era.get("apertura", "")
         )
 
