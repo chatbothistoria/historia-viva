@@ -8,7 +8,7 @@ Mejoras v7:
 """
 
 import streamlit as st
-import json, re, os, random
+import json, re, os, random, html
 from datetime import datetime
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1129,7 +1129,7 @@ def render_teacher_panel():
             era_emoji = ERA_META.get(q["era"], {}).get("emoji", "🏛️")
             st.markdown(
                 f'<div class="teacher-q-row">'
-                f'{era_emoji} <em>"{q["question"]}"</em>'
+                f'{era_emoji} <em>"{html.escape(q["question"])}"</em>'
                 f'<div class="teacher-q-meta">'
                 f'🕐 {q["ts"]} · {q["era_name"]} · {LEVELS.get(q["level"],{}).get("label","")}'
                 f'</div></div>',
@@ -1455,7 +1455,7 @@ def main():
                         st.rerun()
                     else:
                         st.error("Contraseña incorrecta.")
-                st.caption("Contraseña por defecto: **docente**\n\nCámbiala añadiendo `TEACHER_PASSWORD` en los Secrets de Streamlit.")
+                st.caption("Configura `TEACHER_PASSWORD` en los Secrets de Streamlit para acceder al panel docente.")
         else:
             calls_now     = gemini_calls_today()
             remaining_now = max(0, GEMINI_DAILY_LIMIT - calls_now)
