@@ -1,8 +1,8 @@
 """
-Historia Viva · Infantil y Primaria  —  v7
+Historia Viva · Infantil y Primaria  —  v8
 ─────────────────────────────────────────
-Mejoras v7:
-  1. Imágenes por época (Wikipedia REST API, cacheadas al arrancar)
+Características principales:
+  1. Imágenes locales por época (archivos en /images, cacheadas al arrancar)
   2. Panel "¿Sabías que?" con microfacts de la base de datos
   3. Panel docente con estadísticas de clase (sin base de datos externa)
 """
@@ -452,7 +452,7 @@ def load_era_images() -> dict:
 #   RPD (peticiones/día):  1.000  → límite interno: 950 (margen de seguridad)
 #   RPM (peticiones/min):     30
 # Comprueba tu uso en: console.groq.com/usage
-GEMINI_DAILY_LIMIT = 950   # reaprovechamos la variable — ahora es el límite de Groq
+GROQ_DAILY_LIMIT = 950   # reaprovechamos la variable — ahora es el límite de Groq
 
 @st.cache_resource
 def get_classroom_stats() -> dict:
@@ -464,27 +464,27 @@ def get_classroom_stats() -> dict:
     return {
         "questions":       [],   # {era, era_name, level, question, ts}
         "quiz_results":    [],   # {era, era_name, level, score, total, ts}
-        "gemini_calls":    0,    # contador diario de llamadas a Gemini
-        "gemini_date":     "",   # fecha del contador (reinicia a medianoche)
+        "groq_calls":    0,    # contador diario de llamadas a Groq
+        "groq_date":     "",   # fecha del contador (reinicia a medianoche)
     }
 
-def gemini_calls_today() -> int:
-    """Devuelve el número de llamadas a Gemini hechas hoy (se resetea a medianoche)."""
+def groq_calls_today() -> int:
+    """Devuelve el número de llamadas a Groq hechas hoy (se resetea a medianoche)."""
     stats = get_classroom_stats()
     today = datetime.now().strftime("%Y-%m-%d")
-    if stats["gemini_date"] != today:
-        stats["gemini_calls"] = 0
-        stats["gemini_date"]  = today
-    return stats["gemini_calls"]
+    if stats["groq_date"] != today:
+        stats["groq_calls"] = 0
+        stats["groq_date"]  = today
+    return stats["groq_calls"]
 
-def increment_gemini_calls():
-    """Incrementa el contador diario de llamadas a Gemini."""
+def increment_groq_calls():
+    """Incrementa el contador diario de llamadas a Groq."""
     stats = get_classroom_stats()
     today = datetime.now().strftime("%Y-%m-%d")
-    if stats["gemini_date"] != today:
-        stats["gemini_calls"] = 0
-        stats["gemini_date"]  = today
-    stats["gemini_calls"] += 1
+    if stats["groq_date"] != today:
+        stats["groq_calls"] = 0
+        stats["groq_date"]  = today
+    stats["groq_calls"] += 1
 
 def log_question(era_id: str, era_name: str, level: str, question: str):
     stats = get_classroom_stats()
@@ -536,11 +536,11 @@ def load_all_data():
     return era_index, eras, era_contexts
 
 # (Motor local de FAQ eliminado — causaba falsos positivos en el matching
-#  y devolvía respuestas de temas erróneos. Gemini recibe el contexto
+#  y devolvía respuestas de temas erróneos. Groq recibe el contexto
 #  completo de la época y responde directamente con precisión.)
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# CONTEXTO PARA GEMINI
+# CONTEXTO PARA GROQ
 # ═══════════════════════════════════════════════════════════════════════════════
 def build_context(era_data: dict) -> str:
     sections      = era_data.get("sections", {})
@@ -988,25 +988,28 @@ def render_quiz_progress(current: int, total: int):
 def handle_question(question: str, current_era: dict, level: str,
                     era_meta: dict, prebuilt_context: str = ""):
     """
-    Todas las preguntas van a Gemini para garantizar voz de personaje y
-    adaptación pedagógica correcta.
+    Procesa una pregunta del alumno y muestra la respuesta del personaje.
 
-    Si existe una FAQ con coincidencia clara (score ≥ 3), se pasa a Gemini
-    como "respuesta base" para que la reformule con voz y nivel apropiados,
-    no como respuesta directa (que carecía de personalidad).
-
-    Auto-lectura en Infantil: se dispara DESPUÉS de tener el texto completo
-    → lectura fluida sin cortes ni pausas.
+    Flujo:
+      1. Renderiza la pregunta del alumno en el chat.
+      2. Si se ha alcanzado el límite diario de Groq, muestra un mensaje
+         de aviso sin llamar a la API.
+      3. Si hay cuota, llama a Groq con el system prompt completo
+         (voz del personaje + contexto de la época + instrucciones
+         pedagógicas del nivel) y hace streaming de la respuesta.
+      4. Guarda la respuesta en el historial y registra la pregunta para
+         el panel docente.
+      5. En nivel Infantil, lanza el TTS automáticamente con el texto
+         completo (no por chunks) → lectura fluida sin cortes.
     """
     ss = st.session_state
 
     with st.chat_message("user", avatar="🧑‍🎓"):
         st.write(question)
 
-    # Gemini recibe contexto completo — sin hints que puedan confundir
-    # Comprobar límite diario de seguridad
-    calls_today = gemini_calls_today()
-    if calls_today >= GEMINI_DAILY_LIMIT:
+    # Comprobar límite diario de seguridad antes de llamar a Groq
+    calls_today = groq_calls_today()
+    if calls_today >= GROQ_DAILY_LIMIT:
         fallback = (
             "Se han usado todas las preguntas disponibles para hoy. "
             "El límite se reinicia a medianoche (hora española: 9h). "
@@ -1016,13 +1019,13 @@ def handle_question(question: str, current_era: dict, level: str,
             st.warning(fallback)
         full_text = fallback
     else:
-        # Gemini responde siempre — con voz de personaje y nivel adaptado
+        # Groq responde siempre — con voz de personaje y nivel adaptado
         with st.chat_message("assistant", avatar=era_meta["emoji"]):
             full_text = st.write_stream(
                 stream_groq(question, current_era, level,
                             ss.messages[:-1], prebuilt_context)
             )
-        increment_gemini_calls()
+        increment_groq_calls()
 
     ss.messages.append({"role": "assistant", "content": full_text})
     ss.last_bot_text  = full_text
@@ -1053,15 +1056,15 @@ def render_teacher_panel():
         "Se reinician al redesplegar o cuando la app se duerme."
     )
 
-    # ── Indicador de quota Gemini ────────────────────────────────────────────
-    calls = gemini_calls_today()
-    remaining = max(0, GEMINI_DAILY_LIMIT - calls)
-    pct_used  = min(100, int(calls / GEMINI_DAILY_LIMIT * 100))
+    # ── Indicador de quota Groq ────────────────────────────────────────────
+    calls = groq_calls_today()
+    remaining = max(0, GROQ_DAILY_LIMIT - calls)
+    pct_used  = min(100, int(calls / GROQ_DAILY_LIMIT * 100))
     quota_color = "#2e7d32" if pct_used < 60 else ("#f57c00" if pct_used < 85 else "#c62828")
     st.markdown(f"""
     <div class="teacher-stat-card" style="border-color:{quota_color}40;">
-      <div class="teacher-stat-title">LLAMADAS A GEMINI HOY</div>
-      <div class="teacher-stat-value" style="color:{quota_color};">{calls} / {GEMINI_DAILY_LIMIT}</div>
+      <div class="teacher-stat-title">LLAMADAS A GROQ HOY</div>
+      <div class="teacher-stat-value" style="color:{quota_color};">{calls} / {GROQ_DAILY_LIMIT}</div>
       <div style="background:#e8e5ff;border-radius:8px;height:8px;margin-top:8px;">
         <div style="background:{quota_color};width:{pct_used}%;height:8px;border-radius:8px;transition:width .3s;"></div>
       </div>
@@ -1457,13 +1460,13 @@ def main():
                         st.error("Contraseña incorrecta.")
                 st.caption("Configura `TEACHER_PASSWORD` en los Secrets de Streamlit para acceder al panel docente.")
         else:
-            calls_now     = gemini_calls_today()
-            remaining_now = max(0, GEMINI_DAILY_LIMIT - calls_now)
-            pct_now       = min(100, int(calls_now / GEMINI_DAILY_LIMIT * 100))
+            calls_now     = groq_calls_today()
+            remaining_now = max(0, GROQ_DAILY_LIMIT - calls_now)
+            pct_now       = min(100, int(calls_now / GROQ_DAILY_LIMIT * 100))
             bar_color     = "#2e7d32" if pct_now < 60 else ("#f57c00" if pct_now < 85 else "#c62828")
             st.markdown(
                 f'<div style="font-size:.75rem;color:#667685;margin:4px 0 6px;">'
-                f'Gemini hoy: <b style="color:{bar_color}">{calls_now}/{GEMINI_DAILY_LIMIT}</b> '
+                f'Groq hoy: <b style="color:{bar_color}">{calls_now}/{GROQ_DAILY_LIMIT}</b> '
                 f'({remaining_now} restantes)</div>',
                 unsafe_allow_html=True,
             )
